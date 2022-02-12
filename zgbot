@@ -1,0 +1,51 @@
+#!/bin/bash
+
+
+_get_repolink () {
+    local regex
+    regex='(https?)://github.com/.+/.+'
+    if [[ $ZG_REPO == "zgbot" ]]
+    then
+        echo "aHR0cHM6Ly9naXRodWIuY29tL0gxTTRONUhVMFAvTUFGSUEtVVNFUkJPVC9hcmNoaXZlL21hc3Rlci56aXA=" | base64 -d
+    elif [[ $ZG_REPO == "ZGBOT" ]]
+    then
+        echo "aHR0cHM6Ly9naXRodWIuY29tL0gxTTRONUhVMFAvTUFGSUEtVVNFUkJPVC9hcmNoaXZlL21hc3Rlci56aXA=" | base64 -d
+    elif [[ $ZG_REPO =~ $regex ]]
+    then
+        if [[ $ZG_REPO_BRANCH ]]
+        then
+            echo "${ZG_REPO}/archive/${ZG_REPO_BRANCH}.zip"
+        else
+            echo "${ZG_REPO}/archive/master.zip"
+        fi
+    else
+        echo "aHR0cHM6Ly9naXRodWIuY29tL0gxTTRONUhVMFAvTUFGSUEtVVNFUkJPVC9hcmNoaXZlL21hc3Rlci56aXA=" | base64 -d
+    fi
+}
+
+
+_set_bot () {
+    local zippath
+    zippath="zgbot.zip"
+    echo "  Downloading source code ..."
+    wget -q $(_get_repolink) -O "$zippath"
+    echo "  Unpacking Data ..."
+    ZGPATH=$(zipinfo -1 "$zippath" | grep -v "/.");
+    unzip -qq "$zippath"
+    echo "Done"
+    echo "  Cleaning ..."
+    rm -rf "$zippath"
+    sleep 5
+    cd $ZGPATH
+    echo "    Starting ʑɠ ცơɬ    "
+    echo "
+            ʑɠ ცơɬ
+            
+            @zgarmy
+    "
+
+    python3 ./setup/updater.py ./requirements.txt requirements.txt
+    python3 -m userbot
+}
+
+_set_bot
